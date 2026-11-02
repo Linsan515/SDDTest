@@ -160,7 +160,17 @@ description: "Task list for 節拍器網頁應用（Metronome Web App）"
 
 - [X] T029 執行 `npm run lint` 與 `npm run format` 並修正所有錯誤（不新增 ESLint 規則或套件），於 `src/` 範圍
 - [X] T030 執行 `npm test`（含 `src/metronome/no-setinterval.test.ts`）、`npm run format:check` 與 `npm run build`，全部通過且無 TypeScript 錯誤
-- [ ] T031 依 `specs/001-metronome-web-app/quickstart.md` 完成全部手動驗證（步驟 1–8，含錄音量測 ±5 ms、背景分頁測試與使用性抽測），並將結果與任何偏差記錄於 `specs/001-metronome-web-app/quickstart.md` 末尾的「驗證紀錄」段落。若背景分頁測試出現漏拍或明顯不準：**不在本任務修正**，只記錄現象，並在驗證紀錄中註明「後續迭代：改用 Web Worker 計時器喚醒」（research R1 的備選方案）
+- [ ] T031 依 `specs/001-metronome-web-app/quickstart.md` 完成全部手動驗證（步驟 1–8，含錄音量測 ±5 ms、背景分頁測試與使用性抽測），並將結果與任何偏差記錄於 `specs/001-metronome-web-app/quickstart.md` 末尾的「驗證紀錄」段落。背景分頁測試須在 Phase 7（Web Worker 喚醒）完成後進行
+
+---
+
+## Phase 7: Bug Fix — 背景分頁降速（使用者回報）
+
+**Purpose**: 使用者回報切到其他分頁時 120 BPM 會變成 60 BPM 並卡頓。原因：主執行緒的 `setTimeout` 在背景分頁被節流為約每秒一次。依 research R1（已修訂）改為在 Web Worker 內喚醒。
+
+- [X] T032 撰寫 `src/metronome/audio.test.ts`：以 `vi.stubGlobal("Worker", FakeWorker)` 驗證 `startWakeLoop(cb)` 建立 URL 含 `wake-worker`、`type: "module"` 的 Worker 並送出 `"start"`；Worker 每送一次訊息 `cb` 被呼叫一次；`stopWakeLoop()` 呼叫 `terminate()`。執行 `npm test` 確認**失敗**
+- [X] T033 建立 `src/metronome/wake-worker.ts`：收到 `"start"` 時以遞迴 `setTimeout` 每 25 ms `postMessage("tick")`，收到 `"stop"` 時 `clearTimeout`；**不得**使用 `setInterval`
+- [X] T034 修改 `src/metronome/audio.ts` 的 `startWakeLoop`／`stopWakeLoop`：以 `new Worker(new URL("./wake-worker.ts", import.meta.url), { type: "module" })` 建立 Worker，`onmessage` 呼叫 callback；停止時 `terminate()`。T032 通過，`npm run build` 產出 worker chunk
 
 ---
 

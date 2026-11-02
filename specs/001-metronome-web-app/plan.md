@@ -10,7 +10,7 @@
 
 建立單頁節拍器網頁：開始／停止、40–240 BPM 滑桿、3/4 與 4/4 切換、每小節第一拍重音。
 精準度的關鍵是**不使用 `setInterval` 觸發聲音**，而是以 Web Audio API 的音訊時鐘
-（`AudioContext.currentTime`）為唯一時間基準，採前瞻排程：每 25 ms 以遞迴 `setTimeout` 喚醒一次，
+（`AudioContext.currentTime`）為唯一時間基準，採前瞻排程：在 Web Worker 內每 25 ms 以遞迴 `setTimeout` 喚醒一次（背景分頁也不會被節流），
 把未來 100 ms 內的拍子預先排到音訊時鐘上的精確時間（見 [research.md](./research.md) R1）。
 排程邏輯為不依賴瀏覽器的純 TypeScript 模組，以 Vitest 在假時鐘下驗證 5 分鐘無漂移。
 介面以 Vite + React + TypeScript + Tailwind CSS 3 + shadcn/ui（Button、Slider）實作。
@@ -46,7 +46,7 @@ shadcn/ui（以 `shadcn@2.3.0` CLI 安裝 `button`、`slider`，底層為 Radix 
 |---|---|---|
 | I. 規格驅動 | `spec.md` 已完成且通過品質檢查清單；本計畫、research、data model、contracts 皆可追溯到 FR／SC | ✅ PASS |
 | II. 測試先行 | 排程器以純函式模組設計，時鐘可注入 → 可先寫失敗測試；每個 US 對應 Vitest 測試（見 quickstart）；`npm test` 單一指令、決定性 | ✅ PASS |
-| III. 簡潔優先 | 單一專案、無後端、無狀態管理套件、無日誌套件；音效以振盪器合成不需音檔；不使用 Web Worker／AudioWorklet | ✅ PASS |
+| III. 簡潔優先 | 單一專案、無後端、無狀態管理套件、無日誌套件；音效以振盪器合成不需音檔；不使用 AudioWorklet。Web Worker 只用於喚醒迴圈（約 20 行），是滿足「背景分頁仍維持精準」的最小作法（research R1） | ✅ PASS |
 | IV. 可觀測性 | 極小 JSON logger 記錄 start/stop/bpm_change/meter_change/audio.error；錯誤顯示於 UI 且寫入 `console.error`（research R7） | ✅ PASS |
 | V. MVP 優先 | 只實作 spec 的 US1–US3 與 FR-001–FR-010；只加入 `button`、`slider` 兩個 shadcn 元件；無擴充點、無設定儲存 | ✅ PASS |
 
@@ -100,7 +100,9 @@ src/
 └── metronome/
     ├── scheduler.ts         # 純排程邏輯（contracts/scheduler.md）
     ├── scheduler.test.ts
-    ├── audio.ts             # AudioContext、click 合成、session gain、setTimeout 喚醒迴圈
+    ├── audio.ts             # AudioContext、click 合成、session gain、啟動／停止喚醒 Worker
+    ├── audio.test.ts
+    ├── wake-worker.ts       # Web Worker：每 25 ms 送出 tick（背景分頁不被節流）
     ├── useMetronome.ts      # React hook：串接 scheduler 與 audio
     └── no-setinterval.test.ts
 ```

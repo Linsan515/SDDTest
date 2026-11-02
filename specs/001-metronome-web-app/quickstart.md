@@ -27,6 +27,7 @@ npm run format:check  # Prettier 格式檢查
 | 播放中改 BPM、改拍號（FR-006、FR-008） | `src/metronome/scheduler.test.ts` | 下一個拍距／下一小節生效，拍位不重置 |
 | 慢改快、喚醒延遲時不連響（SC-005、邊界情況） | `src/metronome/scheduler.test.ts` | 相鄰拍間隔皆 ≥ 當下 `60 / bpm` |
 | 快速連按開始不重疊（邊界情況） | `src/components/Metronome.test.tsx` | 音訊 session 只建立一次 |
+| 喚醒迴圈在 Web Worker 執行（背景分頁不降速） | `src/metronome/audio.test.ts` | 建立 module Worker，收到 tick 即排程，停止時 terminate |
 | 不使用 `setInterval` | `src/metronome/no-setinterval.test.ts` | 原始碼中找不到 `setInterval` |
 | UI 契約（US1–US3） | `src/components/Metronome.test.tsx` | 依 [ui.md](./contracts/ui.md) 的名稱與行為 |
 
@@ -39,8 +40,7 @@ npm run format:check  # Prettier 格式檢查
 5. 按「停止」→ 立即無聲；快速連按開始／停止 10 次 → 不出現重疊或殘留聲音。
 6. 精準度抽查：用手機錄音 App 或 Audacity 錄 1 分鐘 120 BPM，
    確認相鄰拍間隔皆為 500 ms ± 5 ms、第 120 拍落在 59.5 秒附近 ± 5 ms。
-7. 播放中切換到其他分頁 1 分鐘再切回 → 期間節拍持續、無明顯漏拍。
-   若出現漏拍：記錄於下方「驗證紀錄」，列為後續迭代（改用 Web Worker 計時器喚醒，research R1），本次不修正。
+7. 播放中切換到其他分頁 1 分鐘再切回 → 期間速度維持不變（120 BPM 不會變成 60 BPM）、無卡頓或漏拍。
 8. 使用性抽測（SC-003、SC-004）：請至少 3 位未看過本專案的人試用並記錄——
    (a) 不看說明，計時完成「開始播放 → 調整速度 → 切換為 3 拍」，目標 30 秒內；
    (b) 播放 4/4 一分鐘，請對方在每小節第一拍拍手，確認能正確辨識重音。

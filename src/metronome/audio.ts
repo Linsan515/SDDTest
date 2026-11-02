@@ -7,7 +7,6 @@ declare global {
   }
 }
 
-const WAKE_INTERVAL_MS = 25;
 const CLICK_ATTACK_SEC = 0.001;
 const CLICK_DECAY_SEC = 0.05;
 
@@ -24,7 +23,7 @@ export interface AudioEngine {
 export function createAudioEngine(): AudioEngine {
   let ctx: AudioContext | null = null;
   let session: GainNode | null = null;
-  let wakeTimer: ReturnType<typeof setTimeout> | null = null;
+  let wakeWorker: Worker | null = null;
 
   return {
     // Must be called synchronously inside a user gesture (browser autoplay rules).
@@ -63,16 +62,16 @@ export function createAudioEngine(): AudioEngine {
       osc.start(time);
       osc.stop(time + CLICK_DECAY_SEC + 0.01);
     },
+    // The loop lives in a worker so it keeps waking every 25 ms in background tabs.
     startWakeLoop(callback) {
-      const wake = () => {
-        callback();
-        wakeTimer = setTimeout(wake, WAKE_INTERVAL_MS);
-      };
-      wakeTimer = setTimeout(wake, WAKE_INTERVAL_MS);
+      wakeWorker?.terminate();
+      wakeWorker = new Worker(new URL("./wake-worker.ts", import.meta.url), { type: "module" });
+      wakeWorker.onmessage = () => callback();
+      wakeWorker.postMessage("start");
     },
     stopWakeLoop() {
-      if (wakeTimer !== null) clearTimeout(wakeTimer);
-      wakeTimer = null;
+      wakeWorker?.terminate();
+      wakeWorker = null;
     },
   };
 }
