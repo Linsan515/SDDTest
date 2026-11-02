@@ -47,10 +47,13 @@ npm run dev
 
 ## 部署
 
-`npm run build` 產生的 `dist/` 是純靜態檔案，可以放到任何靜態網站主機（例如 Netlify、Vercel）。
+線上版本：https://linsan515.github.io/SDDTest/
 
-若部署在子路徑（例如 GitHub Pages 的 `https://<帳號>.github.io/SDDTest/`），
-需先在 `vite.config.ts` 設定 `base: "/SDDTest/"` 再建置。
+每次 push 到 `main`，GitHub Actions（`.github/workflows/deploy.yml`）會自動執行測試、建置，
+並把 `dist/` 發布到 GitHub Pages。測試失敗時不會發布。
+
+正式版建置的網址路徑是 `/SDDTest/`（`vite.config.ts` 的 `base`），開發伺服器仍在根路徑 `/`。
+若改用其他主機或 repo 名稱，請一併修改 `base`。
 
 ## 專案結構
 
