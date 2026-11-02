@@ -1,5 +1,7 @@
 # 節拍器（Metronome Web App）
 
+**線上版：https://linsan515.github.io/SDDTest/**（直接開啟即可使用，不需安裝）
+
 在瀏覽器中使用的精準節拍器：
 
 - 開始／停止播放，每小節第一拍為重音
