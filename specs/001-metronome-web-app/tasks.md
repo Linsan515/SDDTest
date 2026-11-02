@@ -160,7 +160,7 @@ description: "Task list for 節拍器網頁應用（Metronome Web App）"
 
 - [X] T029 執行 `npm run lint` 與 `npm run format` 並修正所有錯誤（不新增 ESLint 規則或套件），於 `src/` 範圍
 - [X] T030 執行 `npm test`（含 `src/metronome/no-setinterval.test.ts`）、`npm run format:check` 與 `npm run build`，全部通過且無 TypeScript 錯誤
-- [ ] T031 依 `specs/001-metronome-web-app/quickstart.md` 完成全部手動驗證（步驟 1–8，含錄音量測 ±5 ms、背景分頁測試與使用性抽測），並將結果與任何偏差記錄於 `specs/001-metronome-web-app/quickstart.md` 末尾的「驗證紀錄」段落。背景分頁測試須在 Phase 7（Web Worker 喚醒）完成後進行
+- [X] T031 依 `specs/001-metronome-web-app/quickstart.md` 完成全部手動驗證（步驟 1–8，含錄音量測 ±5 ms、背景分頁測試與使用性抽測），並將結果與任何偏差記錄於 `specs/001-metronome-web-app/quickstart.md` 末尾的「驗證紀錄」段落。背景分頁測試須在 Phase 7（Web Worker 喚醒）完成後進行
 
 ---
 
